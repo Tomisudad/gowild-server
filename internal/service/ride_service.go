@@ -1,4 +1,4 @@
-package service
+﻿package service
 
 import (
 	"errors"
@@ -22,10 +22,9 @@ func (s *RideService) SetUserService(userSvc *UserService) {
 }
 
 func (s *RideService) Start(userID int, req model.StartRideRequest) (*model.Ride, error) {
-	// 检查是否有活跃的骑行
-	active, err := s.repo.FindActiveByUser(userID)
+	// 妫€鏌ユ槸鍚︽湁娲昏穬鐨勯獞琛?	active, err := s.repo.FindActiveByUser(userID)
 	if err == nil && active != nil {
-		return nil, errors.New("已有进行中的骑行，请先结束当前骑行")
+		return nil, errors.New("宸叉湁杩涜涓殑楠戣锛岃鍏堢粨鏉熷綋鍓嶉獞琛?)
 	}
 
 	ride := &model.Ride{
@@ -41,8 +40,7 @@ func (s *RideService) Start(userID int, req model.StartRideRequest) (*model.Ride
 		return nil, err
 	}
 
-	// 添加初始轨迹点
-	if req.Latitude != 0 || req.Longitude != 0 {
+	// 娣诲姞鍒濆杞ㄨ抗鐐?	if req.Latitude != 0 || req.Longitude != 0 {
 		point := &model.RidePoint{
 			RideID:    ride.ID,
 			Latitude:  req.Latitude,
@@ -61,17 +59,17 @@ func (s *RideService) End(rideID, userID int, dist float64, duration int, avgSpe
 		return err
 	}
 	if ride.UserID != userID {
-		return errors.New("无权操作此骑行记录")
+		return errors.New("鏃犳潈鎿嶄綔姝ら獞琛岃褰?)
 	}
 	if !ride.IsActive {
-		return errors.New("骑行已结束")
+		return errors.New("楠戣宸茬粨鏉?)
 	}
 
 	if err := s.repo.EndRide(rideID, dist, duration, avgSpeed, maxSpeed, calories, coordinates); err != nil {
 		return err
 	}
 
-	// 更新用户统计
+	// 鏇存柊鐢ㄦ埛缁熻
 	if s.userSvc != nil {
 		s.userSvc.UpdateStats(userID, dist)
 	}
@@ -85,10 +83,10 @@ func (s *RideService) Pause(rideID, userID int) error {
 		return err
 	}
 	if ride.UserID != userID {
-		return errors.New("无权操作此骑行记录")
+		return errors.New("鏃犳潈鎿嶄綔姝ら獞琛岃褰?)
 	}
 	if ride.IsPaused {
-		return errors.New("骑行已暂停")
+		return errors.New("楠戣宸叉殏鍋?)
 	}
 
 	return s.repo.PauseRide(rideID)
@@ -100,10 +98,10 @@ func (s *RideService) Resume(rideID, userID int) error {
 		return err
 	}
 	if ride.UserID != userID {
-		return errors.New("无权操作此骑行记录")
+		return errors.New("鏃犳潈鎿嶄綔姝ら獞琛岃褰?)
 	}
 	if !ride.IsPaused {
-		return errors.New("骑行未暂停")
+		return errors.New("楠戣鏈殏鍋?)
 	}
 
 	return s.repo.ResumeRide(rideID)
@@ -135,19 +133,17 @@ func (s *RideService) GetStats(userID int) (*model.RideStats, error) {
 	return s.repo.GetStats(userID)
 }
 
-// CompareRides 对比同一路线的骑行记录
-func (s *RideService) CompareRides(routeID, userID int) ([]model.RideCompareResult, error) {
+// CompareRides 瀵规瘮鍚屼竴璺嚎鐨勯獞琛岃褰?func (s *RideService) CompareRides(routeID, userID int) ([]model.RideCompareResult, error) {
 	rides, err := s.repo.ListByRoute(routeID, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(rides) == 0 {
-		return nil, errors.New("该路线暂无骑行记录")
+		return nil, errors.New("璇ヨ矾绾挎殏鏃犻獞琛岃褰?)
 	}
 
-	// 计算平均值
-	var totalDur, totalSpeed, totalMaxSpeed, totalCal int
+	// 璁＄畻骞冲潎鍊?	var totalDur, totalCal int
 	var avgSpdSum, maxSpdSum float64
 	for _, r := range rides {
 		totalDur += r.Duration
@@ -177,9 +173,7 @@ func (s *RideService) CompareRides(routeID, userID int) ([]model.RideCompareResu
 	return results, nil
 }
 
-// TriggerSOS 触发紧急求助
-func (s *RideService) TriggerSOS(userID int, lat, lng float64, msg string) error {
-	// TODO: 集成SMS/推送服务
-	// 发送SOS信息至紧急联系人
+// TriggerSOS 瑙﹀彂绱ф€ユ眰鍔?func (s *RideService) TriggerSOS(userID int, lat, lng float64, msg string) error {
+	// TODO: 闆嗘垚SMS/鎺ㄩ€佹湇鍔?	// 鍙戦€丼OS淇℃伅鑷崇揣鎬ヨ仈绯讳汉
 	return nil
 }
